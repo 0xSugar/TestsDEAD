@@ -7,7 +7,7 @@ import java.util.regex.Pattern;
 
 public class Test {
     public static void main(String[] args) throws Exception {
-        System.out.println(new Test() == new Test());
+        System.out.println("something2");
     }
 
 }
