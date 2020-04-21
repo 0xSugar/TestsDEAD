@@ -4,7 +4,7 @@ package com.company;
  * @author skul
  */
 
-public class Notes {
+public class NotesJava {
 }
 /*
 
@@ -157,11 +157,6 @@ GregorianCalendar nameCalendar = new GregorianCalendar();       // можно т
 https://www.codeflow.site/ru/article/java__java-date-and-calendar-examples
 http://proglang.su/java/date-and-time *//**
 
-     Узнать четные или не четные числа в вводимом числа (124, 235235)*//*
-for (; n != 0; n/=10) {
-    if (n % 2 == 0) even++;
-    else odd++;}  *//**
-
      Регулярные выражения *//*
 За регулярки отвечают 2 метода: Pattern, Matcher. Паттерну мы передаем <строку с выражением>, а второму - сам паттерн.
  1. Pattern это синглтон, т.е. создание объекта возможно только внутри самого класса. Что бы он создал и присвоил нам
@@ -306,6 +301,20 @@ for (int i = name.length - 1; i > 0; i--) {                     // Цикл дл
 public static String toString() {                               // вид для изменения toString
     return ;
 }
+
+P R O P E R T I E S - как мапа, но сохраняется в файл. Как с ним работать.
+1. Создать объект Properties prop = new Properties();
+ЗАПИСЬ - Для записи в файл и выгрузки из файла используются разные наборы методов:
+prop.load(inputStream);        - передается файл, откуда он будет читать (или какой-то Reader)
+prop.getProperty("email");     - вернет значение ключа email, если нету - null. Так же - ("email", "not found") - выдаст "not found" если ключа "email" нет
+prop.stringPropertyNames;      - получить Set всех ключей for (String key : prop.stringPropertyNames()) { key = prop.getProperty(keY) }
+Можно выводить или через поиск значения по ключу, или перебор всех ключей и поиск по ним, или так:
+for (Map.Entry<String, String> entry : prop.entrySet()) {
+    System.put.println(entry.getKey() + " = " + entry.getValue()); }
+СОХРАНЕНИЕ - Для сохранения сначала нужно добавить все элементы, после чего выгрузить
+prop.setPriority(key, value);       - добавляем ключ - значение или:
+prop.addAll(someMap);               - добавляет все ключи - значения из мапы
+prop.store(outputStream, comment);  - выгружаем, передаем outputStream или Writer, пишем коммент
 *//**       ------------      ------------    М А С С И В    v.s.  A r r a y L i s t       ------------      ------------      ------------                                                                         *//*
             Массив:                                                     ArrayList
 Использовать, когда мы знаем точный объем массива.          Использовать, если мы не знаем какая длина нам нужна.
@@ -496,6 +505,48 @@ PrintStream - Наш любимый клас... System.out.println - в Клас
     (т.е. это объект).. и каждый раз мы вызываем:
     System (имя класса).out (ссылка на объект типа PrintStream). println(метод в классе PrintStream)
 
+*//**       ------------      ------------      С Е Р И А Л И З А Ц И Я      ------------      ------------      ------------      ------------                                                                         *//*
+Сериализая - это сохранения данных, объектов и их полей, после чего их можно выгрузить. Очень удобно, т.к. на выходе получается уже
+    готовый объект с такими же полями. Т.е. не надо ничего никому присваивать, и объект можно просто использовать.
+    Основные правила:
+        - Все поля объекта, которые мы используем нужно так же сериализовать (реализовать интерфейс-маркер Serializable в классе). Если это текст или простые
+            переменные, то проблем не будет. Если это переменные класса (объект), то он так же должен быть сериализованным и так далее. Программа заходит
+            и переводит простые переменные в байты, если это объект - заходит в него и так же переводит все в байты. И так до бесконечности. По этому, что
+            бы все работало, если в классе есть объект - нужно убедиться, что он тоже имеет маркер сериализации. Или эту переменную (поле) пометить как transient.
+            И тогда он Пропустит её и не будет сериализовать, тогда её значение после загрузки будет null.
+        - В классе, которые будет сохранять все это дело должно быть поле private static final long serialVersionUID, что ставит "пометку", к какому "сохранению"
+            относится это. Т.е. при загрузке он будет сверять эти поля, если они разные - выдаст ошибку. Без него он генерирует случайное число, которе в первое
+            сохранение будет работать нормально, но в случае изменения какого-то полня - выдаст ошибку (из за способа генерации этого значения). Так что её всегда
+            нужно указывать. Можно начать с 1.
+        - Синглтон. Если синглтон может иметь только один экземпляр, то нужно создать метод readResolve (возвращает Object, private) без параметров и в нем
+            уже прописать return Singleton.getInstance(), т.е. статический метод, что бы он возвращатся именно этот один объект. Или же, если их несколько, то
+            по какому-то полю определить отличия и сравнить через if, если это тот объект - присвоить его из класса. Если нет - проверить на следующий. Пример
+            на сайте skipy ru в конце.
+        - Пеменные static пренадлежат Классу, а не объету, по этому их сериализовать нет смысла.
+        - Если есть поля Final, то использовать нужно как раз Serializable, Externalizable не сработает. Для Externalizable у класса должен быть публичный
+            конструктор, так же у всех классов наследников должны быть публичные конструкторы.
+
+
+    Как использовать: сначала нужно создать класс, где будут находится все данные которые нужно сохранить. К примеру SaveGame (тут должно быть поле
+    private static final long serialVersionUID с номером, и массив объектов, что нас интересуют.. те же объекты могут иметь свои объекты, но они все
+    должны реализовывать Serializable). После чего, в нашем главном методе:
+    SaveGame same = new SaveGame(сюда передать все, для сохранения);
+    FileOutputStream fos = new FileOutputStream(file);
+    ObjectOutputStream oos = new ObjectOutputStream(fos);
+    oos.writeObject(save);                                      - в файл запишется объект в виде байтов, если все ок.
+
+    Что бы выгрузить:
+    FileInputStream fis = new FileInputStream(file);
+    ObjectInputStream ois = new ObjectInputStream(fis);
+    Object object = ois.readObject();
+    Save someSave = (Save) object;                              - тут и будет находится наш сохраненный объект save класса SaveGame
+
+private void writeObject(java.io.ObjectOutputStream out) throws IOException {}
+private void readObject(java.io.ObjectInputStream in) throws IOException, ClassNotFoundException {}
+private static final long serialVersionUID
+хорошая статья - https://javarush.ru/groups/posts/2022-serializacija-i-deserializacija-v-java
+полное описание - http://www.skipy.ru/technics/serialization.html
+видосики - https://www.youtube.com/watch?v=8accK8dHaa4&list=PLyxk-1FCKqodhV1d55ZmoAcz6aeyhLxnr&index=9
 *//**   -----------      ------------      ------------      ------------      ------------      ------------      ------------      ------------                                                                        *//*
 ArithmeticException - арифметическая ошибка, например, деление на нуль
 ArrayIndexOutOfBoundsException - выход индекса за границу массива
